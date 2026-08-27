@@ -1,0 +1,266 @@
+{
+  "name": "Ai Fitness Plan Generator (LOGIN)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "81e3dc6a-1556-4e28-88e7-006adae84efe",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "60d44eec-9c64-45e5-b0d4-fc75eccc1a53",
+      "name": "Login - Webhook",
+      "webhookId": "81e3dc6a-1556-4e28-88e7-006adae84efe"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dp7GxR7GI-2wPHBMXWNK6esi4VPFCulCxX-Mnbq5BQ0",
+          "mode": "list",
+          "cachedResultName": "AI Fitness Plan ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dp7GxR7GI-2wPHBMXWNK6esi4VPFCulCxX-Mnbq5BQ0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dp7GxR7GI-2wPHBMXWNK6esi4VPFCulCxX-Mnbq5BQ0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Email",
+              "lookupValue": "={{ $json.body.email }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "fbcc1f36-852c-421c-a0c7-438c2ad1d6e8",
+      "name": "Find User",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NKufN3dPQaPJEOIF",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b6cc6533-5e99-4dbf-a5db-9705bbf9148a",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "ab48f20d-5189-411a-ab60-8ecdfd7d781c",
+      "name": "User Found"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"Failed\",\n  \"message\": \"Invalid email or password\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "a6eb5032-131f-407c-8faf-58b02acbdf4d",
+      "name": "Login - Invalid Credentials"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "808c377d-144a-4623-8a1e-a9c25e4905ee",
+              "leftValue": "={{ $json.Password }}",
+              "rightValue": "={{ $('Login - Webhook').item.json.body.password }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "a5140cbc-9aff-426a-83cd-2ddb94148a84",
+      "name": "Check Login Password"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"Failed\",\n  \"message\": \"Invalid email or password\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "5f8995e3-150f-4935-92d7-4c19f5233f6a",
+      "name": "Login - Invalid Password"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"Success\",\n  \"message\": \"Login successful\",\n  \"result\": \"User authenticated\",\n  \"user\": {\n    \"userId\": \"={{ $json['User ID'] }}\",\n    \"fullName\": \"={{ $json.FullName }}\",\n    \"email\": \"={{ $json.Email }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        896,
+        -192
+      ],
+      "id": "e9d7ed1b-2b9e-461f-8de1-b56f9c74e09f",
+      "name": "Login - Success Response"
+    },
+    {
+      "parameters": {
+        "content": "## LOGIN PORTION  FOR THE WEBSITE",
+        "height": 512,
+        "width": 1232,
+        "color": "#60436B"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "22658e1e-d3c8-498d-aa2f-098ad29f0e27",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Login - Webhook": {
+      "main": [
+        [
+          {
+            "node": "Find User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User": {
+      "main": [
+        [
+          {
+            "node": "User Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Found": {
+      "main": [
+        [
+          {
+            "node": "Check Login Password",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Login - Invalid Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Login Password": {
+      "main": [
+        [
+          {
+            "node": "Login - Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Login - Invalid Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b1d95755-0545-44bb-96fd-c4eba8365a58",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee9eea9943b99e9f1bca22f482df25e0ebbb43cc4d92d0edf66740a8403112f6"
+  },
+  "nodeGroups": [],
+  "id": "jqjZapE6v8q48PoN",
+  "tags": []
+}
