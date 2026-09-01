@@ -1,14 +1,19 @@
-# AI Fitness Plan Generator
+# Baryalai — AI Fitness Plan Generator
 
-A portfolio-ready AI automation project built with **n8n, OpenAI, Google Sheets, and a web frontend**. It covers user registration, login validation, and personalized fitness-plan generation through webhook-driven workflows.
+Baryalai (بریالی) is a full-stack AI fitness portfolio project built with a React/Vite frontend and three n8n workflows for registration, login, and personalized fitness-plan generation.
 
-## Project Workflows
+## What is included
 
-- **Registration** — validates required fields, checks password length, prevents duplicate emails, creates a user record, and returns the registered user ID.
-- **Login** — looks up the user by email, validates credentials, and returns the authenticated user profile.
-- **Fitness Plan Generator** — validates fitness data, generates a personalized workout and meal plan with OpenAI, stores plan data, and returns the generated plan.
+- Premium responsive Baryalai frontend
+- Real n8n registration flow
+- Real n8n login validation
+- AI fitness-plan generation through n8n + OpenAI
+- Google Sheets persistence in the n8n workflows
+- Browser session caching for the authenticated user and latest generated plan
+- Print / Save PDF support from the plan dashboard
+- No fake login or silent local fallback if n8n fails
 
-## Repository Structure
+## Repository structure
 
 ```text
 AI-Fitness-Plan-Generator/
@@ -16,28 +21,117 @@ AI-Fitness-Plan-Generator/
 │   ├── registration.json
 │   ├── login.json
 │   └── fitness-plan-generator.json
-└── README.md
+├── src/
+│   ├── api.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   ├── styles.css
+│   └── types.ts
+├── .env.example
+├── .gitignore
+├── index.html
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-## Tech Stack
+## Architecture
 
-- n8n — workflow orchestration and webhooks
-- OpenAI — AI-generated fitness plans
-- Google Sheets — prototype data storage
-- Web frontend — registration, login, and fitness-plan UI
+```text
+Browser / React
+   |-- Register ---> n8n Registration ---> Google Sheets Users
+   |-- Login ------> n8n Login ----------> Google Sheets Users
+   `-- Assessment -> n8n Fitness --------> OpenAI + Google Sheets
+                                           |
+                                           `-> AI coaching plan
+```
 
-## Importing the Workflows
+## Run locally
 
-1. Download a workflow JSON from `n8n-workflows/`.
-2. In n8n, choose **Import from File**.
-3. Reconnect your own Google Sheets and OpenAI credentials after import.
-4. Verify sheet names/columns and webhook URLs before activation.
-5. Test each workflow before connecting it to a production frontend.
+### 1. Install Node.js
 
-## Security / Production Notes
+Use Node.js 18 or newer.
 
-This repository demonstrates an educational/prototype implementation. For a production application, passwords should be hashed and stored in a proper authentication/database system rather than stored as plain text in Google Sheets. Secrets and API keys are not intended to be committed to this repository.
+### 2. Install dependencies
 
-## Status
+```bash
+npm install
+```
 
-The workflows are cleaned and organized for a polished portfolio release.
+### 3. Configure n8n production webhooks
+
+Copy the environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+Then replace the placeholders with the **production** webhook URLs from the three active n8n workflows:
+
+```env
+VITE_REGISTER_WEBHOOK_URL="https://YOUR-N8N-HOST/webhook/YOUR-REGISTRATION-PATH"
+VITE_LOGIN_WEBHOOK_URL="https://YOUR-N8N-HOST/webhook/YOUR-LOGIN-PATH"
+VITE_FITNESS_WEBHOOK_URL="https://YOUR-N8N-HOST/webhook/YOUR-FITNESS-PATH"
+```
+
+Do not use `/webhook-test/` URLs for the deployed site.
+
+### 4. Start the frontend
+
+```bash
+npm run dev
+```
+
+### 5. Build for production
+
+```bash
+npm run build
+```
+
+## n8n workflow setup
+
+Import the three JSON files from `n8n-workflows/`. On a different n8n instance you may need to reconnect the Google Sheets and OpenAI credentials and verify the sheet/tab mappings before activation.
+
+The frontend expects these successful response shapes.
+
+### Registration
+
+```json
+{
+  "status": "Success",
+  "message": "User registered successfully",
+  "userId": "..."
+}
+```
+
+### Login
+
+```json
+{
+  "status": "Success",
+  "message": "Login successful",
+  "user": {
+    "userId": "...",
+    "fullName": "...",
+    "email": "..."
+  }
+}
+```
+
+### Fitness plan
+
+```json
+{
+  "status": "Success",
+  "message": "Fitness plan generated successfully",
+  "planId": "...",
+  "userId": "...",
+  "fitnessPlan": "..."
+}
+```
+
+## Important security note
+
+This is a portfolio / learning implementation. The tested registration workflow currently stores passwords in Google Sheets in plain text. That is **not appropriate for a production authentication system**. A production release should use a real authentication provider or secure password hashing, a proper database, rate limiting, and protected backend endpoints.
+
+No `.env.local` file, API key, or credential secret should be committed to this repository.
